@@ -4,13 +4,12 @@ import { connect } from 'react-redux'
 import { selectSubreddit, fetchPostsIfNeeded, invalidateSubreddit } from '../actions'
 import Picker from '../components/Picker'
 import Posts from '../components/Posts'
+import {AjaxData} from "../ooredux"
 
 class App extends Component {
   static propTypes = {
     selectedSubreddit: PropTypes.string.isRequired,
-    posts: PropTypes.array.isRequired,
-    isFetching: PropTypes.bool.isRequired,
-    lastUpdated: PropTypes.number,
+    ajaxPost: PropTypes.instanceOf(AjaxData),
     dispatch: PropTypes.func.isRequired
   }
 
@@ -39,8 +38,10 @@ class App extends Component {
   }
 
   render() {
-    const { selectedSubreddit, posts, isFetching, lastUpdated } = this.props
-    const isEmpty = posts.length === 0
+    const { selectedSubreddit} = this.props
+    const ajaxPost = this.props.ajaxPost || new AjaxData()
+    const lastUpdated = ajaxPost.getIn(["context", "lastUpdated"])
+    const isEmpty = ajaxPost.data.isEmpty()
     return (
       <div>
         <Picker value={selectedSubreddit}
@@ -53,16 +54,16 @@ class App extends Component {
               {' '}
             </span>
           }
-          {!isFetching &&
+          {!ajaxPost.is_loading &&
             <button onClick={this.handleRefreshClick}>
               Refresh
             </button>
           }
         </p>
         {isEmpty
-          ? (isFetching ? <h2>Loading...</h2> : <h2>Empty.</h2>)
-          : <div style={{ opacity: isFetching ? 0.5 : 1 }}>
-              <Posts posts={posts} />
+          ? (ajaxPost.is_loading ? <h2>Loading...</h2> : <h2>Empty.</h2>)
+          : <div style={{ opacity: ajaxPost.is_loading ? 0.5 : 1 }}>
+              <Posts posts={ajaxPost.data} />
             </div>
         }
       </div>
@@ -72,20 +73,12 @@ class App extends Component {
 
 const mapStateToProps = state => {
   const { selectedSubreddit, postsBySubreddit } = state
-  const {
-    isFetching,
-    lastUpdated,
-    items: posts
-  } = postsBySubreddit[selectedSubreddit] || {
-    isFetching: true,
-    items: []
-  }
+  const ajaxPost = postsBySubreddit[selectedSubreddit]
 
   return {
     selectedSubreddit,
-    posts,
-    isFetching,
-    lastUpdated
+    //ajaxPost is an AjaxData class and it contains all the information we need
+    ajaxPost
   }
 }
 

@@ -34,13 +34,14 @@ const fetchPosts = subreddit => dispatch => {
 
 const shouldFetchPosts = (state, subreddit) => {
   const posts = state.postsBySubreddit[subreddit]
-  if (!posts) {
+  //When creating new AjaxData object, it's default status is "pending"
+  if (!posts || posts.is_pending) {
     return true
   }
-  if (posts.isFetching) {
+  if (posts.is_loading) {
     return false
   }
-  return posts.didInvalidate
+  return posts.needs_reload
 }
 
 export const fetchPostsIfNeeded = subreddit => (dispatch, getState) => {
