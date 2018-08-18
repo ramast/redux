@@ -1,8 +1,7 @@
 import { combineReducers } from 'redux'
 import { AjaxData, AJAX_STATUS } from "../ooredux"
 import {
-  SELECT_SUBREDDIT, INVALIDATE_SUBREDDIT,
-  REQUEST_POSTS, RECEIVE_POSTS
+  SELECT_SUBREDDIT, AC_POST_LIST
 } from '../actions'
 
 const selectedSubreddit = (state = 'reactjs', action) => {
@@ -16,17 +15,17 @@ const selectedSubreddit = (state = 'reactjs', action) => {
 
 const posts = (state = new AjaxData(), action) => {
   switch (action.type) {
-    case INVALIDATE_SUBREDDIT:
+    case AC_POST_LIST.REQUEST_RELOAD:
       return state.set("status", AJAX_STATUS.needs_reload)
-    case REQUEST_POSTS:
+    case AC_POST_LIST.LOADING:
       return state.set("status", AJAX_STATUS.loading)
-    case RECEIVE_POSTS:
+    case AC_POST_LIST.LOADED:
       //AjaxData class contain 3 primary entries (data, status and context)
       //Context is useful for storing any addition information beside what was returned by the backend
       return state.merge({
         status: AJAX_STATUS.loaded,
-        data: action.posts,
-        context: {lastUpdated: action.receivedAt}
+        data: action.data,
+        context: {lastUpdated: action.context.receivedAt}
       })
     default:
       return state
@@ -35,12 +34,12 @@ const posts = (state = new AjaxData(), action) => {
 
 const postsBySubreddit = (state = { }, action) => {
   switch (action.type) {
-    case INVALIDATE_SUBREDDIT:
-    case RECEIVE_POSTS:
-    case REQUEST_POSTS:
+    case AC_POST_LIST.REQUEST_RELOAD:
+    case AC_POST_LIST.LOADING:
+    case AC_POST_LIST.LOADED:
       return {
         ...state,
-        [action.subreddit]: posts(state[action.subreddit], action)
+        [action.context.subreddit]: posts(state[action.context.subreddit], action)
       }
     default:
       return state
