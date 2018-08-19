@@ -40,7 +40,7 @@ class App extends Component {
   render() {
     const { selectedSubreddit} = this.props
     const ajaxPost = this.props.ajaxPost || new AjaxData()
-    const lastUpdated = ajaxPost.getIn(["context", "lastUpdated"])
+    const lastUpdated = ajaxPost.getIn(["context", "receivedAt"])
     const isEmpty = ajaxPost.data.isEmpty()
     return (
       <div>
@@ -72,8 +72,8 @@ class App extends Component {
 }
 
 const mapStateToProps = state => {
-  const { selectedSubreddit, postsBySubreddit } = state
-  const ajaxPost = postsBySubreddit[selectedSubreddit]
+  const selectedSubreddit = state.get("selectedSubreddit")
+  const ajaxPost = state.getIn(["postsBySubreddit", selectedSubreddit]) || new AjaxData()
 
   return {
     selectedSubreddit,

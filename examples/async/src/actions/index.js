@@ -1,5 +1,4 @@
 import {AjaxAction} from "../ooredux"
-
 export const SELECT_SUBREDDIT = 'SELECT_SUBREDDIT'
 
 export const selectSubreddit = subreddit => ({
@@ -49,7 +48,7 @@ export const fetchPosts = subreddit => AC_POST_LIST.load({subreddit}, {subreddit
 export const invalidateSubreddit = (subreddit) => AC_POST_LIST.request_reload({subreddit})
 
 const shouldFetchPosts = (state, subreddit) => {
-  const posts = state.postsBySubreddit[subreddit]
+  const posts = state.getIn(["postsBySubreddit", subreddit])
   //By default an AjaxData object has status "pending"
   if ((!posts) || posts.is_pending) {
     return true

@@ -9,7 +9,11 @@ import App from './containers/App'
 
 const middleware = [ thunk ]
 if (process.env.NODE_ENV !== 'production') {
-  middleware.push(createLogger())
+  middleware.push(createLogger({
+    //Convert state to Javascript object before printing it to console
+    //Makes debugging information more usable
+    stateTransformer: (state) => state.toJS()
+  }))
 }
 
 const store = createStore(
