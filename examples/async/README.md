@@ -1,36 +1,56 @@
-# Redux Async Example
+Hi,
+I've been doing lot of work with React/Redux that involve lot of API calls to an external backend.
 
-This project template was built with [Create React App](https://github.com/facebookincubator/create-react-app), which provides a simple way to start React projects with no build configuration needed.
+The way you do that for each API you need to do the following
+1. Store variables to hold API call status (pending, in progress, succeeded, failed), variable to hold returned data and another one to hold any returned errors.
+2. Actions to trigger API fetching data plus other actions to handle response from backend.
+3. Reducer to consume these actions
 
-Projects built with Create-React-App include support for ES6 syntax, as well as several unofficial / not-yet-final forms of Javascript syntax such as Class Properties and JSX.  See the list of [language features and polyfills supported by Create-React-App](https://github.com/facebookincubator/create-react-app/blob/master/packages/react-scripts/template/README.md#supported-language-features-and-polyfills) for more information.
+Repeating this again and again for each API is error prone and difficult to maintain on the long run so I decided to create 3 news classes `AjaxData`, `AjaxAction` and `AjaxReducer`.
 
-## Available Scripts
+`AjaxData` is an Immutable class that inherit from (Record)[https://facebook.github.io/immutable-js/docs/#/Record] and contain 4 attributes (status, data, error and context)
 
-In the project directory, you can run:
+If you create instance of that Record for your API then you have place to store you API call status, returned data, returned errors and any extra context you want to keep track of.
 
-### `npm start`
+`AjaxData` can be used by itself without the need of the other two classes.
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+`AjaxAction` class provide the common Action functions you need when performing an API call.
+For example instead of doing
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+    const POST_LIST_LOAD_SUCCESS = "POST_LIST_LOAD_SUCCESS"
+    const POST_LIST_IS_LOADING = "POST_LIST_IS_LOADING"
 
-### `npm run build`
+    function is_loading() {
+       return {type: POST_LIST_IS_LOADING}
+    }
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    function is_load_success() {
+       return {type: POST_LIST_IS_LOAD_SUCCESS}
+    }
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+You can do
 
-### `npm run eject`
+    const POST_LIST = new AjaxAction("POST_LIST")
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Then you automatically have
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    POST_LIST.loaded()
+    POST_LIST.loading()
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+which will return 
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+    {type: "POST_LIST_LOADED"}
+    {type: "POST_LIST_LOADING"}
 
+Then in the reducer you can handle `POST_LIST.LOADED` and `POST_LIST.LOADING` constants instead of  `POST_LIST_LOAD_SUCCESS` and `POST_LIST_IS_LOADING`.
+
+`AjaxAction` can also be used standalone without the need for the other two classes.
+
+Finally we have `AjaxReducer` which require that you use both `AjaxData` and `AjaxAction`. Also you must be using immutableJS for your store.
+
+`AjaxReducer` instance automatically handle `AjaxAction`'s actions and update the corresponding `AjaxData` instance.
+
+Of course most of the time you will want to customize the behavior of the two classes `AjaxAction` and `AjaxReducer`
+which you can do by means of inheritance and override the method you want to customize.
+
+This is not a final project yet and need your feedback and suggestions before properly packaging and releasing it
